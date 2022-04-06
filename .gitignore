@@ -1,5 +1,5 @@
 #defaults
-# .gitignore
+.gitignore
 __pycache__/
 .vscode/
 
