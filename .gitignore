@@ -1,0 +1,10 @@
+#defaults
+# .gitignore
+__pycache__/
+.vscode/
+
+# run files
+run_*
+
+# test files
+test_*
