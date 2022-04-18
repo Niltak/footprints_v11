@@ -9,7 +9,7 @@ class Connection(object):
         self,
         hostname,
         user,
-        pwd) -> None:
+        pwd=None) -> None:
         '''
         Starts a connection to the foot prints server.
         '''

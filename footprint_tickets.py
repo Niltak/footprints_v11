@@ -1,19 +1,19 @@
 import footprints_v11 as foot
 
 
-def ticket_details(user, pwd, project_id, ticket_id):
+def ticket_details(user, project_id, ticket_id, pwd=None):
     foot_connection = foot.Connection(
         'support.purdue.edu', user, pwd)
     return foot_connection.ticket_details(project_id, ticket_id)
 
 
-def ticket_search(user, pwd, project_id, key, key_selected='title'):
+def ticket_search(user, project_id, key, key_selected='title', pwd=None):
     foot_connection = foot.Connection(
         'support.purdue.edu', user, pwd)
     return foot_connection.search_tickets(project_id, key, key_selected=key_selected)
 
 
-def ticket_create(user, pwd, project_id, title, details):
+def ticket_create(user, project_id, title, details, pwd=None):
     foot_connection = foot.Connection(
         'support.purdue.edu', user, pwd)
     return foot_connection.ticket_create(project_id, title, details)
@@ -27,9 +27,9 @@ def ticket_create(user, pwd, project_id, title, details):
 
 def ticket_close(
     user,
-    pwd,
     project_id,
     ticket_number,
+    pwd=None,
     priority=None,
     status='Resolved',
     assignees=None,
