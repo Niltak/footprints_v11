@@ -14,7 +14,7 @@ def audit_user(
     '''
     '''
     try:
-        full_ticket_list = foot_connection.search_tickets(
+        full_ticket_list = foot_connection.ticket_search(
             project_id, name, key_selected='assignee')
     except:
         log.debug('No new tickets found!')

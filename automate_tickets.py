@@ -61,7 +61,7 @@ def search_PAL_Gaming(
         foot_connection = foot.Connection(
             'support.purdue.edu', user, pwd)
 
-    ticket_list = foot_connection.search_tickets(
+    ticket_list = foot_connection.ticket_search(
         project_id, 'PAL Gaming')
 
     output_ticket_list = []
