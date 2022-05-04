@@ -10,7 +10,7 @@ def ticket_details(user, project_id, ticket_id, pwd=None):
 def ticket_search(user, project_id, key, key_selected='title', pwd=None):
     foot_connection = foot.Connection(
         'support.purdue.edu', user, pwd)
-    return foot_connection.search_tickets(project_id, key, key_selected=key_selected)
+    return foot_connection.ticket_search(project_id, key, key_selected=key_selected)
 
 
 def ticket_create(user, project_id, title, details, pwd=None):
@@ -65,6 +65,30 @@ def ticket_close(
         select_contact=select_contact)
 
     return ticket_return
+
+
+def change_details(user, project_id, ticket_id, pwd=None):
+    if not isinstance(ticket_id, list):
+        ticket_id = [ticket_id]
+    foot_connection = foot.Connection(
+        'support.purdue.edu', user, pwd)
+
+    ticket_list = []    
+    for id in ticket_id:
+        ticket_list.append(foot_connection.change_details(project_id, id))
+    return ticket_list
+
+
+def change_search(user, project_id, key, key_selected='title', pwd=None):
+    foot_connection = foot.Connection(
+        'support.purdue.edu', user, pwd)
+    return foot_connection.change_search(project_id, key, key_selected=key_selected)
+
+
+def change_create(user, project_id, title, details, pwd=None):
+    foot_connection = foot.Connection(
+        'support.purdue.edu', user, pwd)
+    return foot_connection.change_create(project_id, title, details)
 
 
 if __name__ == "__main__":

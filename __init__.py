@@ -61,10 +61,10 @@ class Connection(object):
         '''
 
 
-    def ticket_details(self, project_id, ticket_id) -> object:
+    def details(self, project_id, ticket_id) -> dict:
         '''
-        Requests information about a ticket.
-        Returns Ticket(class).
+        Requests information about a ticket or change.
+        Returns dictionary.
         '''
         action = 'getIssueDetails'
         data = f'''
@@ -80,6 +80,16 @@ class Connection(object):
         ticket_dict = self.requesting_dict(data, action)
         if not ticket_dict:
             return False
+
+        return ticket_dict
+
+
+    def ticket_details(self, project_id, ticket_id) -> object:
+        '''
+        Requests information about a ticket.
+        Returns Ticket(class).
+        '''
+        ticket_dict = self.details(project_id, ticket_id)
         
         ticket = Ticket(ticket_id)
         ticket.title = ticket_dict['title']['#text']
@@ -110,7 +120,7 @@ class Connection(object):
         return ticket
 
 
-    def search_tickets(self, project_id, key, key_selected='title') -> list:
+    def ticket_search(self, project_id, key, key_selected='title') -> list:
         '''
         Requests information about a key word in the title of all the tickets.
         Returns a list of Tickets(class).
@@ -170,10 +180,12 @@ class Connection(object):
         service_offering='Wired__bCampus__bNetwork__bServices',
         urgency='Working__bNormally',
         impact='Minimal',
-        campus='West__bLafayette'):
+        campus='West__bLafayette',
+        submitter_id=None):
         '''
         '''
-        submitter_id = self.user    # Temp
+        if not submitter_id:
+            submitter_id = self.user
         assignees_data = f'<assignees xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:string[{len(assignees)}]">'
         for assignee in assignees:
             assignees_data += f'<item xsi:type="xsd:string">{assignee}</item>'
@@ -320,6 +332,169 @@ class Connection(object):
             tech_note=tech_note,
             select_contact=select_contact)
         return ticket_number
+
+
+    def change_details(self, project_id, ticket_id) -> object:
+        '''
+        Requests information about a change ticket.
+        Returns Ticket(class).
+        '''
+        ticket_dict = self.details(project_id, ticket_id)
+
+        ticket = Ticket(ticket_id)
+        ticket.title = ticket_dict['title']['#text']
+        ticket.status = ticket_dict['status']['#text']
+        if '#text' in ticket_dict['First__bName'].keys():
+            ticket.contact_fullname = f"{ticket_dict['First__bName']['#text']} {ticket_dict['Last__bName']['#text']}"
+        ticket_details = [
+            {'field': 'Position__bTitle', 'name': 'contact_title'},
+            {'field': 'assignees', 'name': 'assigned'},
+            {'field': 'Campus__bBuilding', 'name': 'building'},
+            {'field': 'description', 'name': 'notes'},
+            {'field': 'Tech__bNotes', 'name': 'tech_notes'},
+            {'field': 'alldescs', 'name': 'full_notes'},
+            {'field': 'Environment', 'name': 'risk_env'},
+            {'field': 'Communication__bPlan', 'name': 'risk_comm'},
+            {'field': 'Implementation__bCycle', 'name': 'risk_implement'},
+            {'field': 'Risk__bof__bNOT__bDoing__bthe__bChange', 'name': 'risk_not'},
+            {'field': 'Technical__bComplexity__bof__bthe__bChange', 'name': 'risk_complex'},
+            {'field': 'Backout__bPlan', 'name': 'risk_back_plan'},
+            {'field': 'Backout__bImpact', 'name': 'risk_back_impact'},
+            {'field': 'Change__bMethod', 'name': 'risk_method'},
+            {'field': 'Production__bReadiness__bComplete', 'name': 'risk_prod_ready'},
+            {'field': 'Testing__b__Pprior__bto__bimplementation__p', 'name': 'risk_testing'},
+            {'field': 'Validation__bPlan__b__Ppost__uimplementation__btesting__p', 'name': 'risk_vaildation'},
+            {'field': 'Implementation__bWindow', 'name': 'risk_window'},
+            {'field': 'Downtime__bRequired', 'name': 'risk_downtime'},
+            {'field': 'Number__bof__bPeople__bUsing__bthe__bService', 'name': 'risk_num_people'},
+            {'field': 'Impact__bto__bUsers__band__bProcesses', 'name': 'risk_impact'},
+            {'field': 'Purdue__bStatus', 'name': 'p_status'},
+            {'field': 'status', 'name': 'status'},
+            {'field': 'Change__bAdvisory__bReview', 'name': 'board'},
+            {'field': 'priority', 'name': 'prio'},
+            {'field': 'solutionType', 'name': 'solution'}
+        ]
+        for detail in ticket_details:
+            if '#text' in ticket_dict[detail['field']].keys():
+                ticket_text = ticket_dict[detail['field']]['#text']
+                if 'xsd:base64Binary' in ticket_dict[detail['field']].values():
+                    ticket_text = str(b64decode(ticket_text))
+                setattr(ticket, detail['name'], ticket_text)
+
+        if ticket.assigned: # Turn ticket.assigned into a list and remove cc'ed users
+            ticket.assigned = ticket.assigned.split(' ')
+            for assigned in ticket.assigned[:]:
+                if 'CC:' in assigned:
+                    ticket.assigned.remove(assigned)
+
+        return ticket
+
+
+    def change_search():
+        pass
+
+
+    def change_create(
+        self,
+        project_id,
+        title,
+        assignees=['ITAP_NETWORKING'],
+        status='Open',
+        priority=2, # Change Advisory Board
+        risk_level='Low__bRisk',
+        # proposed_date='',
+        downtime='0',
+        campus='West__bLafayette',
+        proj_info='',
+        category='Infrastructure',
+        service='Network',
+        service_offering='Wired__bCampus__bNetwork__bServices',
+        reason='Patching',
+        vaildation_des='',
+        backout_des='',
+        p_status='Active',
+        tech_notes='',
+        details='',
+        risk_env='Non__uProduction__bCritical',
+        risk_comm='No',
+        risk_implement='Normal',
+        risk_not='Currently__bOut__bof__bLicense',
+        risk_complex='Straight__bForward',
+        risk_back_plan='Straight__bForward',
+        risk_back_impact='No__bBusiness__bImpact',
+        risk_method='Routine',
+        risk_prod_ready='Yes__b__f__bNot__bApplicable',
+        risk_testing='Fully__bTested',
+        risk_vaildation='No',
+        risk_window='Outside__bthe__bMaintenance__bWindow',
+        risk_downtime='None',
+        risk_num_people='0__u4',
+        risk_impact='Low',
+        submitter_id=None):
+        '''
+        '''
+        if not submitter_id:
+            submitter_id = self.user
+
+        assignees_data = f'<assignees xsi:type="SOAP-ENC:Array" SOAP-ENC:arrayType="xsd:string[{len(assignees)}]">'
+        for assignee in assignees:
+            assignees_data += f'<item xsi:type="xsd:string">{assignee}</item>'
+        assignees_data += '</assignees>'
+
+        action = 'createIssue'
+        data = f'''
+            <namesp1:MRWebServices__{action} xmlns:namesp1="MRWebServices">
+                <user xsi:type="xsd:string">{self.user}</user>
+                <password xsi:type="xsd:string">{self.pwd}</password>
+                <extrainfo xsi:type="xsd:string"/>
+                <args xsi:type="namesp2:SOAPStruct">
+                    <projectID xsi:type="xsd:int">{project_id}</projectID>
+                    <submitter xsi:type="xsd:string">{title}</submitter>
+                    <title xsi:type="xsd:string">{title}</title>
+                    <status xsi:type="xsd:string">{status}</status>
+                    <priority xsi:type="xsd:int">{priority}</priority>
+                    <description xsi:type="xsd:string">{details}</description>
+                    <abfields xsi:type="namesp2:SOAPStruct">
+                        <User__bID xsi:type="xsd:string">{submitter_id}</User__bID>
+                    </abfields>
+                    <projfields xsi:type="namesp2:SOAPStruct">
+                        <Reason__bfor__bChange xsi:type="xsd:string">{reason}<\Reason__bfor__bChange>
+                        <Risk__bLevel xsi:type="xsd:string">{risk_level}<\Risk__bLevel>
+                        <Back__uOut__bPlan__bDescription xsi:type="xsd:string">{backout_des}<\Back__uOut__bPlan__bDescription>
+                        <Validation__bPlan__bDescription xsi:type="xsd:string">{vaildation_des}<\Validation__bPlan__bDescription>
+                        <Duration__bof__bDowntime__bRequired__b__PMinutes__p xsi:type="xsd:string">{downtime}<\Duration__bof__bDowntime__bRequired__b__PMinutes__p>
+                        <Campus__Pes__p__bImpacted xsi:type="xsd:string">{campus}<\Campus__Pes__p__bImpacted>
+                        <Project__bInfo xsi:type="xsd:string">{proj_info}<\Project__bInfo>
+                        <Category xsi:type="xsd:string">{category}</Category>
+                        <Service xsi:type="xsd:string">{service}</Service>
+                        <Service__bOffering xsi:type="xsd:string">{service_offering}</Service__bOffering>
+                        <Campus xsi:type="xsd:string">{campus}</Campus>
+                        <Environment xsi:type="xsd:string">{risk_env}</Environment>
+                        <Communication__bPlan xsi:type="xsd:string">{risk_comm}</Communication__bPlan>
+                        <Implementation__bCycle xsi:type="xsd:string">{risk_implement}</Implementation__bCycle>
+                        <Risk__bof__bNOT__bDoing__bthe__bChange xsi:type="xsd:string">{risk_not}</Risk__bof__bNOT__bDoing__bthe__bChange>
+                        <Technical__bComplexity__bof__bthe__bChange xsi:type="xsd:string">{risk_complex}</Technical__bComplexity__bof__bthe__bChange>
+                        <Backout__bPlan xsi:type="xsd:string">{risk_back_plan}</Backout__bPlan>
+                        <Backout__bImpact xsi:type="xsd:string">{risk_back_impact}</Backout__bImpact>
+                        <Change__bMethod xsi:type="xsd:string">{risk_method}</Change__bMethod>
+                        <Production__bReadiness__bComplete xsi:type="xsd:string">{risk_prod_ready}</Production__bReadiness__bComplete>
+                        <Testing__b__Pprior__bto__bimplementation__p xsi:type="xsd:string">{risk_testing}</Testing__b__Pprior__bto__bimplementation__p>
+                        <Validation__bPlan__b__Ppost__uimplementation__btesting__p xsi:type="xsd:string">{risk_vaildation}</Validation__bPlan__b__Ppost__uimplementation__btesting__p>
+                        <Implementation__bWindow xsi:type="xsd:string">{risk_window}</Implementation__bWindow>
+                        <Downtime__bRequired xsi:type="xsd:string">{risk_downtime}</Downtime__bRequired>
+                        <Number__bof__bPeople__bUsing__bthe__bService xsi:type="xsd:string">{risk_num_people}</Number__bof__bPeople__bUsing__bthe__bService>
+                        <Impact__bto__bUsers__band__bProcesses xsi:type="xsd:string">{risk_impact}</Impact__bto__bUsers__band__bProcesses>
+                    </projfields>
+                    <selectContact xsi:type="xsd:string">{submitter_id}</selectContact>
+                </args>
+            </namesp1:MRWebServices__{action}>
+        '''
+        data = self.soap_envelope(data)
+        return self.requesting_dict(data, action)['#text']
+
+
+    def change_update():
+        pass
 
 
 class Ticket(dict):
