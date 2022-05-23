@@ -88,7 +88,7 @@ def change_search(user, project_id, key, key_selected='title', pwd=None):
 def change_create(user, project_id, title, details, pwd=None):
     foot_connection = foot.Connection(
         'support.purdue.edu', user, pwd)
-    return foot_connection.change_create(project_id, title, details)
+    return foot_connection.change_create(project_id, title, details=details)
 
 
 if __name__ == "__main__":
