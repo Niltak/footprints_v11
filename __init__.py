@@ -449,7 +449,7 @@ class Connection(object):
                 <extrainfo xsi:type="xsd:string"/>
                 <args xsi:type="namesp2:SOAPStruct">
                     <projectID xsi:type="xsd:int">{project_id}</projectID>
-                    <submitter xsi:type="xsd:string">{title}</submitter>
+                    <submitter xsi:type="xsd:string">{submitter_id}</submitter>
                     <title xsi:type="xsd:string">{title}</title>
                     <status xsi:type="xsd:string">{status}</status>
                     <priority xsi:type="xsd:int">{priority}</priority>
@@ -468,7 +468,6 @@ class Connection(object):
                         <Category xsi:type="xsd:string">{category}</Category>
                         <Service xsi:type="xsd:string">{service}</Service>
                         <Service__bOffering xsi:type="xsd:string">{service_offering}</Service__bOffering>
-                        <Campus xsi:type="xsd:string">{campus}</Campus>
                         <Environment xsi:type="xsd:string">{risk_env}</Environment>
                         <Communication__bPlan xsi:type="xsd:string">{risk_comm}</Communication__bPlan>
                         <Implementation__bCycle xsi:type="xsd:string">{risk_implement}</Implementation__bCycle>
