@@ -1,7 +1,8 @@
 import csv
 import datetime
+from getpass import getpass
 import logging as log
-import Footprints_Python.footprints_v11 as foot
+import footprints_v11 as foot
 import nil_lib as ks
 
 
@@ -40,7 +41,7 @@ def audit_user(
 
 def audit_network_team(
     user,
-    pwd,
+    pwd=None,
     project_id=17,
     day_range=365,
     ticket_type=None,
@@ -48,12 +49,9 @@ def audit_network_team(
     '''
     '''
     network_team = [
-        'kvsampso',
         'skfoley',
         'dekkyb',
         'peercy',
-        'richar96',
-        'mskvarek',
         'montgo59',
         'huffb',
         'caseb',
@@ -62,8 +60,12 @@ def audit_network_team(
         'jone1513',
         'jehimes']
 
+    if not pwd:
+        pwd = getpass()
+
     foot_connection = foot.Connection(
         'support.purdue.edu', user, pwd)
+        
     team_list = []
     for team_member in network_team:
         ticket_list = audit_user(
